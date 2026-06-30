@@ -172,6 +172,14 @@ func NewServer(cfg *InitConfig, opts ...ServerOption) (*Server, error) {
 		return nil, trace.Wrap(err)
 	}
 
+	// Report the enterprise license expiry as a Unix timestamp in seconds. The
+	// auth server holds the license, so the value is read directly from
+	// modules. It is the zero value (reported as 0) for builds without an
+	// expiring license.
+	if expiry := modules.GetModules().LicenseExpiry(); !expiry.IsZero() {
+		licenseExpiryMetric.Set(float64(expiry.Unix()))
+	}
+
 	if cfg.VersionStorage == nil {
 		return nil, trace.BadParameter("version storage is not set")
 	}
@@ -833,6 +841,14 @@ var (
 		[]string{teleport.TagPrivateKeyPolicy},
 	)
 
+	licenseExpiryMetric = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: teleport.MetricNamespace,
+			Name:      teleport.MetricLicenseExpiry,
+			Help:      "Expiry of the Teleport Enterprise license as a Unix timestamp in seconds; 0 if not applicable.",
+		},
+	)
+
 	prometheusCollectors = []prometheus.Collector{
 		generateRequestsCount, generateThrottledRequestsCount,
 		generateRequestsCurrent, generateRequestsLatencies, UserLoginCount, heartbeatsMissedByAuth,
@@ -842,6 +858,7 @@ var (
 		registeredAgentsInstallMethod,
 		userCertificatesGeneratedMetric,
 		roleCount,
+		licenseExpiryMetric,
 	}
 )
 

@@ -277,6 +277,11 @@ const (
 	// MetricTeleportServices tracks which services are currently running in the current Teleport Process.
 	MetricTeleportServices = "services"
 
+	// MetricLicenseExpiry tracks the expiry of the Teleport Enterprise license
+	// as a Unix timestamp in seconds. It is 0 when no expiring license applies
+	// (for example OSS/Community builds).
+	MetricLicenseExpiry = "license_expiry_timestamp_seconds"
+
 	// TagRange is a tag specifying backend requests
 	TagRange = "range"
 
